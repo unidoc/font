@@ -1,0 +1,33 @@
+github.com/unidoc/font
+======================
+
+A fork of tdewolff/font (https://github.com/tdewolff/font) by Taco de Wolff.
+The upstream MIT license in LICENSE.md applies unchanged.
+
+This fork is maintained for UniDoc's own needs, with no support or stability
+guarantees, and may be changed, archived or removed at any time. For general
+use, we recommend upstream.
+
+Forked from upstream commit 54f98bb59ee6a56afa51b0c470949b16a4530ca4. The
+package API is the same as upstream's, so switching is a change of import path.
+
+Differences from upstream
+-------------------------
+1. WOFF2 head.flags bit 11 (woff2.go, ParseWOFF2): the WOFF2 spec requires the
+   bit to be set, but real fonts (e.g. BarlowCondensed-SemiBold) ship with it
+   clear, and Chrome, FreeType and fontTools accept them. Upstream rejects
+   such fonts; this fork sets the bit and keeps decoding. The DSIG check stays
+   a separate check, so fonts with a DSIG table are still rejected.
+2. Go version: go.mod requires Go 1.25. The examples/glyphs example, which
+   depends on github.com/tdewolff/canvas and a newer Go, is removed.
+3. Upstream's AI-agent instruction files (AGENTS.md, copilot-instructions.md)
+   are removed.
+
+The module rename also updates the root module's examples to the new import
+path; the nested modules under cmd/ and tests/ are unchanged.
+
+Updating from upstream
+----------------------
+Rebase this fork's commits onto the new upstream tip, keep the differences
+above (drop any upstream has made unnecessary), check that `go test ./...`
+passes with Go 1.25, update the commit hash above, and tag a new version.
