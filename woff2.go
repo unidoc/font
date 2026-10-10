@@ -256,9 +256,15 @@ func ParseWOFF2(b []byte) ([]byte, error) {
 		return nil, fmt.Errorf("head: must be present")
 	}
 	binary.BigEndian.PutUint32(tables[iHead].data[8:], 0x00000000) // clear checkSumAdjustment
+	// WOFF2 spec section 6 requires bit 11 of head.flags to be set; in practice
+	// many real-world fonts ship with the bit clear, and other decoders
+	// (FreeType, fontTools) treat this as a non-fatal recommendation rather
+	// than rejecting the font outright. Relax the check: set the bit silently
+	// instead of failing, so downstream parsers see a compliant head table.
 	if flags := binary.BigEndian.Uint16(tables[iHead].data[16:]); flags&0x0800 == 0 {
-		return nil, fmt.Errorf("head: bit 11 in flags must be set")
-	} else if _, hasDSIG := tagTableIndex["DSIG"]; hasDSIG {
+		binary.BigEndian.PutUint16(tables[iHead].data[16:], flags|0x0800)
+	}
+	if _, hasDSIG := tagTableIndex["DSIG"]; hasDSIG {
 		return nil, fmt.Errorf("DSIG: must be removed")
 	}
 

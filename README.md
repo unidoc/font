@@ -1,4 +1,14 @@
-# Font [![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/github.com/tdewolff/font?tab=doc)
+# Font [![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/github.com/unidoc/font?tab=doc)
+
+> UniDoc's fork of [tdewolff/font](https://github.com/tdewolff/font) by Taco de Wolff (MIT, [license](LICENSE.md) unchanged), maintained for our own use, mainly WOFF/WOFF2 decoding. Differences from upstream:
+>
+> - WOFF2 fonts with bit 11 of `head.flags` clear are accepted instead of rejected.
+> - Requires Go 1.25; the `examples/glyphs` example is removed.
+> - Upstream's AI-agent instruction files are removed.
+>
+> See [NOTICE](NOTICE) for details.
+>
+> This fork is maintained for UniDoc's own needs, with no support or stability guarantees, and may be changed, archived or removed at any time. For general use, we recommend [upstream](https://github.com/tdewolff/font).
 
 Parsers for SFNT-based fonts (TTF, OTF, WOFF, WOFF2, EOT) that can extract glyph paths, advancement and kerning data, Unicode mapping and glyph lookups. It also supports **merging two fonts** as well as **subsetting fonts** using a list of glyphs. It can write out TTF/OTF as well as WOFF2 fonts. The WOFF and WOFF2 converters have been testing using the validation tests from the W3C (https://github.com/w3c/woff/tree/master/woff1/tests and https://github.com/w3c/woff2-tests).
 
@@ -8,7 +18,7 @@ Parsers for SFNT-based fonts (TTF, OTF, WOFF, WOFF2, EOT) that can extract glyph
 ### Parse font
 
 ``` go
-import "github.com/tdewolff/font"
+import "github.com/unidoc/font"
 
 // Can be any of TTF, OTF, TTC, WOFF, WOFF2, or EOT
 fontBytes, err := os.ReadFile("DejaVuSerif.otf")
@@ -47,69 +57,10 @@ sfnt.Write() []byte
 sfnt.WriteWOFF2() ([]byte, error)
 ```
 
-### [Extract glyph shape](https://github.com/tdewolff/font/tree/master/examples/glyphs)
+### [Merge fonts](https://github.com/unidoc/font/tree/master/examples/merge)
 
 ``` go
-import (
-    "github.com/tdewolff/canvas"
-    "github.com/tdewolff/font"
-)
-
-const mmPerPt = 25.4 / 72.0
-
-func main () {
-    // Can be any of TTF, OTF, TTC, WOFF, WOFF2, or EOT
-    fontBytes, err := os.ReadFile("DejaVuSerif.otf")
-    if err != nil {
-        panic(err)
-    }
-
-    sfnt, err := font.ParseSFNT(fontBytes, 0) // 0 is the first index for TTC fonts
-    if err != nil {
-        panic(err)
-    }
-
-    dpmm := 2.0 // pixels per mm, rasterisation resolution
-    fontSize := 12.0 // font size in points
-
-    scale := fontSize * mmPerPt / float64(sfnt.UnitsPerEm()) // mm per units-per-em
-    ppem := uint16(dpmm * fontSize * mmPerPt + 0.5) // size of em in pixels
-    ascender, descender, _ := sfnt.VerticalMetrics()
-
-    var x, y int16
-    p := &canvas.Path{}
-
-    indexA := sfnt.GlyphIndex('A') // can be 0 if not present
-    indexV := sfnt.GlyphIndex('V') // can be 0 if not present
-    if err := sfnt.GlyphPath(p, indexA, ppem, scale*float64(x), scale*float64(y), scale, font.NoHinting); err != nil {
-        panic(err)
-    }
-    x += int16(sfnt.GlyphAdvance(indexA))
-    x += sfnt.Kerning(indexA, indexV)
-
-    if err := sfnt.GlyphPath(p, indexV, ppem, scale*float64(x), scale*float64(y), scale, font.NoHinting); err != nil {
-        panic(err)
-    }
-    x += int16(sfnt.GlyphAdvance(indexV))
-
-    width := scale*float64(scale)
-    height := scale*float64(ascender+descender)
-
-    c := canvas.New(width, height)
-    ctx := canvas.NewContext(c)
-    ctx.DrawPath(0.0, 0.0, p)
-    if err := renderers.Write("AV.png", c, canvas.Resolution(dpmm)); err != nil {
-        panic(err)
-    }
-}
-```
-
-![Output of AV text](https://github.com/tdewolff/font/raw/refs/heads/master/examples/glyphs/out.png)
-
-### [Merge fonts](https://github.com/tdewolff/font/tree/master/examples/merge)
-
-``` go
-import "github.com/tdewolff/font"
+import "github.com/unidoc/font"
 
 // Load two fonts
 fontBytes, err := os.ReadFile("DejaVuSerif.otf")
@@ -143,10 +94,10 @@ if err := os.WriteFile("DejaVuSerif-Merged.otf", sfnt.Write(), 0644); err != nil
 }
 ```
 
-### [Subset font](https://github.com/tdewolff/font/tree/master/examples/subset)
+### [Subset font](https://github.com/unidoc/font/tree/master/examples/subset)
 
 ``` go
-import "github.com/tdewolff/font"
+import "github.com/unidoc/font"
 
 fontBytes, err := os.ReadFile("DejaVuSerif.otf")
 if err != nil {
@@ -184,7 +135,7 @@ if err := os.WriteFile("DejaVuSerif-Subset.otf", sfntSubset.Write(), 0644); err 
 ### Convert to TTF/OTF
 
 ``` go
-import "github.com/tdewolff/font"
+import "github.com/unidoc/font"
 
 // Can be any of TTF, OTF, TTC, WOFF, WOFF2, or EOT
 fontBytes, err := os.ReadFile("DejaVuSerif.woff")
