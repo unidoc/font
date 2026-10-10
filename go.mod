@@ -1,4 +1,4 @@
-module github.com/tdewolff/font
+module github.com/unidoc/font
 
 go 1.25.0
 
